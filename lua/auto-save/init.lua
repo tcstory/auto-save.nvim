@@ -1,6 +1,7 @@
 local M = {}
 
 local config = require('auto-save.config')
+local debounce = require('auto-save.util').debounce
 
 local cacheRoot = {}
 local autoSavedFiles = {}
@@ -26,8 +27,18 @@ local addToSavedFiles = function (cur, autoSavedFiles)
   table.insert(autoSavedFiles, cur)
 end
 
+local save_buf = {}
+
 local save = function (buf)
-  vim.pretty_print('[auto-save]: save', buf)
+  if save_buf[buf] then
+    -- 
+  else
+    save_buf[buf] = debounce(function ()
+      vim.pretty_print('[auto-save]: save', buf)
+    end, config.debounce_delay)
+  end
+
+  save_buf[buf]()
 end
 
 local on = function () 
