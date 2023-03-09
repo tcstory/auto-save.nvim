@@ -1,26 +1,42 @@
 local M = {}
+local debounce = require('auto-save.lib').debounce
+local config = require('auto-save.config')
 
-function M.debounce(callback, duration)
-  local timer = nil
-  local clear = function ()
-    timer:stop()
-    timer:close()
-    timer = nil
-  end
+local cache_root = {}
+local auto_saved_files = {}
 
-  local wrapper = function ()
-    if timer ~= nil then
-      vim.pretty_print("alreay .. clear it")
-      clear() 
+function M.is_under_git(cur)
+  for k in pairs(cache_root) do
+    if vim.regex(k .. '*'):match_str(cur) then
+      return true
     end
-
-    timer = vim.defer_fn(function ()
-      timer = nil
-      callback()
-    end, duration)
   end
 
-  return wrapper
+  for dir in vim.fs.parents(cur) do
+    if vim.fn.isdirectory(dir .. "/.git") == 1 then
+      cache_root[dir] = true
+      return true
+    end
+  end
+  return false
+end
+
+function M.add_to_saved_files(cur)
+  table.insert(auto_saved_files, cur)
+end
+
+local save_buf = {}
+
+function M.save(buf)
+  if save_buf[buf] then
+    -- 
+  else
+    save_buf[buf] = debounce(function ()
+      vim.pretty_print('[auto-save]: save', buf)
+    end, config.debounce_delay)
+  end
+
+  save_buf[buf]()
 end
 
 return M
