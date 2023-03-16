@@ -8,14 +8,15 @@ function M.debounce(callback, duration)
     timer = nil
   end
 
-  local wrapper = function ()
+  local wrapper = function (...)
+    local args = {...}
     if timer ~= nil then
       clear() 
     end
 
     timer = vim.defer_fn(function ()
       timer = nil
-      callback()
+      callback(unpack(args))
     end, duration)
   end
 

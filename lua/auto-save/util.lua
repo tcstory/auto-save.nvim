@@ -25,6 +25,16 @@ function M.add_to_saved_files(cur)
   table.insert(auto_saved_files, cur)
 end
 
+function M.has_file(cur)
+  for i, item in ipairs(auto_saved_files) do
+    if item == cur then
+      return true
+    else
+      return nil
+    end
+  end
+end
+
 local save_buf = {}
 
 function M.save(buf)
@@ -32,11 +42,15 @@ function M.save(buf)
     -- 
   else
     save_buf[buf] = debounce(function ()
-      vim.pretty_print('[auto-save]: save', buf)
+      vim.api.nvim_buf_call(buf, function()
+        vim.pretty_print('[auto-save]: save', buf)
+        -- vim.cmd("silent! write")
+      end)
     end, config.debounce_delay)
   end
 
   save_buf[buf]()
 end
+
 
 return M
