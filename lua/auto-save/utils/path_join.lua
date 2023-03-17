@@ -44,4 +44,28 @@ function M.path_join(...)
   return table.concat(all_parts, path_separator)
 end
 
+
+ function M.read_file(path)
+  local fd = vim.loop.fs_open(path, "r", 438)
+  if not fd then
+    return ""
+  end
+  local stat = vim.loop.fs_fstat(fd)
+  if not stat then
+    return ""
+  end
+  local data = vim.loop.fs_read(fd, stat.size, 0)
+  vim.loop.fs_close(fd)
+  return data or ""
+end
+
+function M.write_file(path, content)
+  local fd = vim.loop.fs_open(path, "w", 438)
+  if not fd then
+    return nil
+  end
+
+  return vim.loop.fs_write(fd, content)
+end
+
 return M

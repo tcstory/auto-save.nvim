@@ -1,11 +1,7 @@
 local M = {}
 
 local config = require('auto-save.config')
-local is_under_git = require('auto-save.util').is_under_git
-local add_to_saved_files = require('auto-save.util').add_to_saved_files
-local has_file = require('auto-save.util').has_file
-local save = require('auto-save.util').save
-local local_history = require('auto-save.local_history')
+local saver = require('auto-save.saver')
 
 
 local command_name = "AutoSave"
@@ -17,8 +13,8 @@ local on = function ()
     group = group_id,
     callback = function (ctx)
       if vim.bo.modifiable then
-        if is_under_git(ctx.file) then
-          add_to_saved_files(ctx.file)
+        if saver.is_under_git(ctx.match) then
+          saver.add_to_saved_files(ctx.match)
         end
       end
     end
@@ -28,9 +24,18 @@ local on = function ()
   vim.api.nvim_create_autocmd(config.trigger_events, {
     group = group_id,
     callback = function(ctx)
-      if has_file(ctx.file) then
-        save(vim.api.nvim_get_current_buf())
+      if saver.has_file(ctx.match) then
+        saver.save(vim.api.nvim_get_current_buf(), ctx.match)
       end
+    end,
+    pattern = "*",
+  })
+
+
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    group = group_id,
+    callback = function()
+      saver.destroy()
     end,
     pattern = "*",
   })
@@ -42,7 +47,7 @@ end
 
 function M.setup()
   on()
-  local_history.init()
+  saver.init()
 end
 
 

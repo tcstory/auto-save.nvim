@@ -1,4 +1,6 @@
 local M = {}
+
+local local_history = require('auto-save.local_history')
 local debounce = require('auto-save.lib').debounce
 local config = require('auto-save.config')
 
@@ -37,14 +39,14 @@ end
 
 local save_buf = {}
 
-function M.save(buf)
+function M.save(buf, path)
   if save_buf[buf] then
-    -- 
+    --
   else
-    save_buf[buf] = debounce(function ()
+    save_buf[buf] = debounce(function()
       vim.api.nvim_buf_call(buf, function()
-        vim.pretty_print('[auto-save]: save', buf)
         -- vim.cmd("silent! write")
+        local_history.add(buf, path)
       end)
     end, config.debounce_delay)
   end
@@ -52,5 +54,12 @@ function M.save(buf)
   save_buf[buf]()
 end
 
+function M.init()
+  local_history.init()
+end
+
+function M.destroy()
+  local_history.destroy()
+end
 
 return M
