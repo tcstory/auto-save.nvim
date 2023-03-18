@@ -14,6 +14,10 @@ function M.is_under_git(cur)
     end
   end
 
+  if vim.regex("/.git/"):match_str(cur) then
+    return false
+  end
+
   for dir in vim.fs.parents(cur) do
     if vim.fn.isdirectory(dir .. "/.git") == 1 then
       cache_root[dir] = true
@@ -31,10 +35,10 @@ function M.has_file(cur)
   for i, item in ipairs(auto_saved_files) do
     if item == cur then
       return true
-    else
-      return nil
     end
   end
+
+  return false
 end
 
 local save_buf = {}
