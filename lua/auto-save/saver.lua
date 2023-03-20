@@ -7,18 +7,18 @@ local config = require('auto-save.config')
 local cache_root = {}
 local auto_saved_files = {}
 
-function M.is_under_git(cur)
+function is_under_git(path)
   for k in pairs(cache_root) do
-    if vim.regex(k .. '*'):match_str(cur) then
+    if vim.regex(k .. '*'):match_str(path) then
       return true
     end
   end
 
-  if vim.regex("/.git/"):match_str(cur) then
+  if vim.regex("/.git/"):match_str(path) then
     return false
   end
 
-  for dir in vim.fs.parents(cur) do
+  for dir in vim.fs.parents(path) do
     if vim.fn.isdirectory(dir .. "/.git") == 1 then
       cache_root[dir] = true
       return true
@@ -27,18 +27,18 @@ function M.is_under_git(cur)
   return false
 end
 
-function M.add_to_saved_files(cur)
-  table.insert(auto_saved_files, cur)
-end
-
-function M.has_file(cur)
-  for i, item in ipairs(auto_saved_files) do
-    if item == cur then
-      return true
-    end
+function M.add_to_saved_files(path)
+  if path == "" then
+    return
   end
 
-  return false
+  if is_under_git(path) then
+    auto_saved_files[path] = 1
+  end
+end
+
+function M.has_file(path)
+  return auto_saved_files[path] == 1
 end
 
 local save_buf = {}

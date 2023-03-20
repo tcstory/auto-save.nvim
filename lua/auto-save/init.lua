@@ -9,23 +9,15 @@ local group_id
 
 local on = function ()
   group_id = vim.api.nvim_create_augroup(command_name, {})
-  vim.api.nvim_create_autocmd({"BufReadPost", "BufNewFile"}, {
-    group = group_id,
-    callback = function (ctx)
-      if vim.bo.modifiable then
-        if saver.is_under_git(ctx.match) then
-          saver.add_to_saved_files(ctx.match)
-        end
-      end
-    end
-  })
-
 
   vim.api.nvim_create_autocmd(config.trigger_events, {
     group = group_id,
     callback = function(ctx)
+      saver.add_to_saved_files(ctx.match)
+
       if saver.has_file(ctx.match) then
-        saver.save(vim.api.nvim_get_current_buf(), ctx.match)
+        local buf = vim.api.nvim_get_current_buf()
+        saver.save(buf, ctx.match)
       end
     end,
     pattern = "*",

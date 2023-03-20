@@ -38,7 +38,7 @@ function M.init()
 end
 
 function M.add(buf, file_path)
-  local content = vim.api.nvim_buf_get_lines(buf, 0, -1, false)  
+  local content = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
   local file_name = vim.fn.rand()
   local path = path_join(vim.fn.stdpath("data"), "auto-save", "local-history", file_name)
   local bytes = write_file(path, content)
