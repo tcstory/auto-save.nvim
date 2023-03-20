@@ -13,11 +13,13 @@ local on = function ()
   vim.api.nvim_create_autocmd(config.trigger_events, {
     group = group_id,
     callback = function(ctx)
-      saver.add_to_saved_files(ctx.match)
+      local buf = vim.api.nvim_get_current_buf()
+      if vim.api.nvim_buf_get_option(0, 'modifiable') then
+        saver.add_to_saved_files(ctx.match)
 
-      if saver.has_file(ctx.match) then
-        local buf = vim.api.nvim_get_current_buf()
-        saver.save(buf, ctx.match)
+        if saver.has_file(ctx.match) then
+          saver.save(buf, ctx.match)
+        end
       end
     end,
     pattern = "*",

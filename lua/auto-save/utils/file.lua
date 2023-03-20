@@ -68,4 +68,8 @@ function M.write_file(path, content)
   return vim.loop.fs_write(fd, content)
 end
 
+function M.del_file(path)
+  return vim.loop.fs_unlink(path)
+end
+
 return M

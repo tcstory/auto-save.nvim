@@ -1,13 +1,32 @@
 local M = {}
 
-local path_join = require('auto-save.utils.path_join').path_join
-local read_file = require('auto-save.utils.path_join').read_file
-local write_file = require('auto-save.utils.path_join').write_file
+local path_join = require('auto-save.utils.file').path_join
+local read_file = require('auto-save.utils.file').read_file
+local write_file = require('auto-save.utils.file').write_file
+local del_file = require('auto-save.utils.file').del_file
+local config = require('auto-save.config')
 
 local store = {
   version = "0.1.0",
   history = {}
 }
+
+local add = function (arr, file_name, limit)
+  local added = {file_name}
+  local removed = {}
+  local n = 1
+
+  for _, item in ipairs(arr) do
+    n = n + 1
+    if n > limit then
+      table.insert(removed, item)
+    else
+      table.insert(added, item)
+    end
+  end
+
+  return added, removed
+end
 
 
 function M.init()
@@ -49,7 +68,13 @@ function M.add(buf, file_path)
     if store.history[file_path] == nil then
       store.history[file_path] = {}
     end
-    table.insert(store.history[file_path], file_name)
+    local added, removed = add(store.history[file_path], file_name, config.local_history_number)
+    store.history[file_path] = added
+
+    for _, item in ipairs(removed) do
+      local path = path_join(vim.fn.stdpath("data"), "auto-save", "local-history", item)
+      local stat = del_file(path)
+    end
   end
 end
 
